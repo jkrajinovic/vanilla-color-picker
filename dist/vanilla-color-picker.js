@@ -106,7 +106,7 @@
       for (var i = 0; i < colors.length; i++) {
         this.elem.innerHTML += singleColorTpl(colors[i], i + 1, i == currentlyChosenColorIndex);
       }
-      this.targetElem.parentNode.appendChild(this.elem);
+      this.targetElem.parentNode.parentNode.appendChild(this.elem);
       this.elem.setAttribute('tabindex', 1);
 
       var toFocus = currentlyChosenColorIndex > -1 ? currentlyChosenColorIndex : 0;
