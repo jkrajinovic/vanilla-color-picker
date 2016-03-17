@@ -53,7 +53,7 @@
     };
   }
 
-  function SinglePicker(elem, colors, className) {
+  function SinglePicker(elem, colors, className, containerNode) {
     MessageMediator.apply(this);
     this.targetElem = elem;
     this.elem = null;
@@ -75,7 +75,7 @@
       }
     };
 
-    this._positionPickerElement = function() {
+    this._positionPickerElement = function(containerNode) {
       var left = this.targetElem.offsetLeft;
       var top = this.targetElem.offsetTop;
       var height = this.targetElem.offsetHeight;
@@ -94,7 +94,7 @@
       }, 1);
     };
 
-    this._createPickerElement = function() {
+    this._createPickerElement = function(containerNode) {
       this.elem = document.createElement('div');
       this.elem.classList.add('vanilla-color-picker');
       if (className) {
@@ -106,7 +106,16 @@
       for (var i = 0; i < colors.length; i++) {
         this.elem.innerHTML += singleColorTpl(colors[i], i + 1, i == currentlyChosenColorIndex);
       }
-      this.targetElem.parentNode.parentNode.appendChild(this.elem);
+      
+	  //adding container node at the vanillapicker initialization
+	  //fixes wrong parentNode bug on Mozilla browser
+	  //esample: picker.set("addContainer", '.containerClass');
+	  if(typeof containerNode === 'undefined'){
+        this.targetElem.parentNode.parentNode.appendChild(this.elem);
+      }else{
+        document.querySelector(containerNode).appendChild(this.elem);
+      }
+	  
       this.elem.setAttribute('tabindex', 1);
 
       var toFocus = currentlyChosenColorIndex > -1 ? currentlyChosenColorIndex : 0;
@@ -145,6 +154,7 @@
 
     this.colors = DEFAULT_COLORS;
     this.className = '';
+	this.containerNode = '';
     this.elem = elem;
     this.currentPicker = null;
     var this_ = this;
@@ -170,7 +180,11 @@
       });
       this.on('className', function(className) {
         this_.className = className;
-      })
+      });
+	  
+	  this.on('addContainer', function(container) {
+        this_.containerNode = container;
+      });
     };
 
     this._updateElemState = function(color) {
@@ -191,7 +205,7 @@
       if (this_.currentPicker) {
         return;
       }
-      this_.currentPicker = new SinglePicker(this_.elem, this_.colors, this_.className);
+      this_.currentPicker = new SinglePicker(this_.elem, this_.colors, this_.className, this.containerNode);
       this_.currentPicker.on('colorChosen', function(color) {
         this_._updateElemState(color);
         this_.destroyPicker();
